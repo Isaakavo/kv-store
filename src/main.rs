@@ -14,10 +14,14 @@ fn main() {
             .read_line(&mut command)
             .expect("Failed to read command");
 
-
         match Command::from_str(&command.trim()) {
-            Ok(command) => println!("Parsed command {:?}", command),
-            Err(_) => println!("Not parsed"),
+            Ok(command) => {
+                match command {
+                    Command::SET(key, value) => println!("Detected values {:?}-{:?}", key, value),
+                    _ => println!("Not implemented yet"),
+                }
+            },
+            Err(_) => println!("Not parsed, command not available"),
         }
     }
 }
