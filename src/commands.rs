@@ -4,8 +4,8 @@ use std::str::FromStr;
 pub enum Command {
     SET(String, String),
     GET(String),
-    DELETE,
-    EXISTS,
+    DELETE(String),
+    EXISTS(String),
 }
 
 #[derive(Debug)]
@@ -26,8 +26,14 @@ impl FromStr for Command {
                 let key = parts.next().ok_or(ParseCommandError)?;
                 Ok(Command::GET(key.to_string()))
             },
-            Some("delete") => Ok(Command::DELETE),
-            Some("exists") => Ok(Command::EXISTS),
+            Some("delete") => {
+                let key = parts.next().ok_or(ParseCommandError)?;
+                Ok(Command::DELETE(key.to_string()))
+            },
+            Some("exists") => {
+                let key = parts.next().ok_or(ParseCommandError)?;
+                Ok(Command::EXISTS(key.to_string()))
+            },
             _ => Err(ParseCommandError),
         }
     }

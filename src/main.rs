@@ -32,8 +32,20 @@ fn main() {
                             Some(value) => println!("Value for key {:?}: {:?}", key, value),
                             None => println!("The key does not exists")
                         }
-                        
                     },
+                    Command::DELETE(key) => {
+                        match store.store.remove(&key) {
+                            Some(delete_value) => println!("value {:?} removed", delete_value),
+                            None => print!("The key does not exists")
+                        }
+                    },
+                    Command::EXISTS(key) => {
+                        if(store.store.contains_key(&key)) {
+                            println!("The key exists");
+                        } else {
+                            println!("The key does not exists")
+                        }
+                    }
                     _ => println!("Not implemented yet"),
                 }
             },
