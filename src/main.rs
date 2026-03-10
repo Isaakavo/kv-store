@@ -38,7 +38,8 @@ fn main() {
                     } else {
                         println!("(integer) 0");
                     }
-                }
+                },
+                Command::KEYS => store.keys(),
             },
             Err(_) => eprintln!("Unknown command"),
         }

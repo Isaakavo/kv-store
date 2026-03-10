@@ -6,6 +6,7 @@ pub enum Command {
     GET(String),
     DELETE(String),
     EXISTS(String),
+    KEYS,
 }
 
 #[derive(Debug)]
@@ -34,6 +35,9 @@ impl FromStr for Command {
                 let key = parts.next().ok_or(ParseCommandError)?;
                 Ok(Command::EXISTS(key.to_string()))
             },
+            Some("keys") => {
+                Ok(Command::KEYS)
+            }
             _ => Err(ParseCommandError),
         }
     }

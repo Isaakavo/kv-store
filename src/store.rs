@@ -26,4 +26,15 @@ impl Store {
     pub fn exists(&self, key: &str) -> bool {
         self.data.contains_key(key)
     }
+
+    pub fn keys(&self) {
+        if self.data.is_empty() {
+            println!("The store is empty");
+            return;
+        }
+
+        for key in self.data.keys() {
+            println!("{key}");
+        }
+    }
 }
