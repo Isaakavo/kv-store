@@ -3,53 +3,44 @@ mod store;
 
 use commands::Command;
 use store::Store;
+use std::io::{self, Write};
 use std::str::FromStr;
-use std::io;
-use std::collections::HashMap;
 
 fn main() {
-    let mut store = Store {
-        store: HashMap::new(),
-    };
+    let mut store = Store::new();
 
     loop {
         print!("> ");
-        let mut command = String::new();
+        io::stdout().flush().expect("Failed to flush stdout");
 
+        let mut input = String::new();
         io::stdin()
-            .read_line(&mut command)
+            .read_line(&mut input)
             .expect("Failed to read command");
 
-        match Command::from_str(&command.trim()) {
-            Ok(command) => {
-                match command {
-                    Command::SET(key, value) => {
-                        println!("Detected values {:?}-{:?}", key, value);
-                        store.store.insert(key, value);
-                    },
-                    Command::GET(key) => {
-                         match store.store.get(&key) {
-                            Some(value) => println!("Value for key {:?}: {:?}", key, value),
-                            None => println!("The key does not exists")
-                        }
-                    },
-                    Command::DELETE(key) => {
-                        match store.store.remove(&key) {
-                            Some(delete_value) => println!("value {:?} removed", delete_value),
-                            None => print!("The key does not exists")
-                        }
-                    },
-                    Command::EXISTS(key) => {
-                        if(store.store.contains_key(&key)) {
-                            println!("The key exists");
-                        } else {
-                            println!("The key does not exists")
-                        }
+        match Command::from_str(input.trim()) {
+            Ok(command) => match command {
+                Command::SET(key, value) => {
+                    store.set(key, value);
+                    println!("OK");
+                }
+                Command::GET(key) => match store.get(&key) {
+                    Some(value) => println!("{}", value),
+                    None => eprintln!("(nil)"),
+                },
+                Command::DELETE(key) => match store.delete(&key) {
+                    Some(_) => println!("OK"),
+                    None => eprintln!("Key not found"),
+                },
+                Command::EXISTS(key) => {
+                    if store.exists(&key) {
+                        println!("(integer) 1");
+                    } else {
+                        println!("(integer) 0");
                     }
-                    _ => println!("Not implemented yet"),
                 }
             },
-            Err(_) => println!("Not parsed, command not available"),
+            Err(_) => eprintln!("Unknown command"),
         }
     }
 }
