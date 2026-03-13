@@ -1,13 +1,42 @@
 use std::collections::HashMap;
-use std::fs::{self, File, OpenOptions};
-use std::io::Write;
+use std::fmt;
+use std::fs::{self, OpenOptions};
+use std::io::{self, BufWriter, Write};
 
 pub struct Store {
     file_name: String,
     data: HashMap<String, String>,
 }
 
-pub struct SaveToFileErr;
+#[derive(Debug)]
+pub enum StoreError {
+    Io(io::Error),
+    EmptyStore,
+}
+
+impl fmt::Display for StoreError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            StoreError::Io(e) => write!(f, "store I/O error: {e}"),
+            StoreError::EmptyStore => write!(f, "cannot save: store contains no entries"),
+        }
+    }
+}
+
+impl std::error::Error for StoreError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            StoreError::Io(e) => Some(e),
+            StoreError::EmptyStore => None,
+        }
+    }
+}
+
+impl From<io::Error> for StoreError {
+    fn from(e: io::Error) -> Self {
+        StoreError::Io(e)
+    }
+}
 
 impl Store {
     pub fn new() -> Self {
@@ -44,65 +73,34 @@ impl Store {
         }
     }
 
-    fn create_file(&self, content: &[u8])-> Result<usize, std::io::Error> {
-        match File::create_new("store.txt") {
-            Ok(mut file) => {
-                return Ok(file.write(content)?);
-            }
-            Err(error) => Err(error),
-        }
-    }
-
-    pub fn save_to_disk(&self) -> Result<bool, SaveToFileErr>{
-
-        let mut content = "".to_string();
-
-        for key in self.data.keys() {
-            let value = self.get(key).expect("key doesnt exists");
-            let key_value = format!("{}: {}\n", key, value);
-            content = content.to_owned() + &key_value;
+    pub fn save_to_disk(&self) -> Result<(), StoreError> {
+        if self.data.is_empty() {
+            return Err(StoreError::EmptyStore);
         }
 
-        if content.is_empty() {
-            return Err(SaveToFileErr)
+        // Write to a temp file first so that a crash mid-write never leaves
+        // a corrupt or partial store file behind.
+        let tmp_path = format!("{}.tmp", self.file_name);
+
+        let file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(&tmp_path)?; // io::Error converts to StoreError::Io via From
+
+        let mut writer = BufWriter::new(file);
+
+        for (key, value) in &self.data {
+            writeln!(writer, "{key}: {value}")?;
         }
 
-        let content = content.as_bytes();
+        // Flush BufWriter's internal buffer to the OS before renaming.
+        writer.flush()?;
 
+        // Atomic rename: the final file is either the old version or the fully
+        // written new one — never a half-written hybrid.
+        fs::rename(&tmp_path, &self.file_name)?;
 
-        match fs::exists(self.file_name.clone()) {
-            Ok(bol) => {
-                if bol {
-                    let mut file = OpenOptions::new()
-                        .append(true)
-                        .open(self.file_name.clone())
-                        .expect("Cannot open file");
-
-                    file.write(content);
-                    return Ok(true);
-                }
-
-                return match  self.create_file(content){
-                    Ok(val) => {
-                        if val > 0 {
-                            return Ok(true)
-                        }
-
-                        return  Ok(false);
-                    },
-                    Err(err) => Err(SaveToFileErr)
-                };
-            }
-            Err(e) => match self.create_file(content) {
-                    Ok(val) => {
-                        if val > 0 {
-                            return Ok(true)
-                        }
-
-                        return  Ok(false);
-                    },
-                    Err(err) => Err(SaveToFileErr)
-                }
-        }
+        Ok(())
     }
 }

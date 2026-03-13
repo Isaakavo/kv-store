@@ -41,8 +41,8 @@ fn main() {
                 }
                 Command::KEYS => store.keys(),
                 Command::SAVE => match store.save_to_disk() {
-                    Ok(value) => println!("Saved to disk {}", value),
-                    Err(_) => println!("Could not save to disk"),
+                    Ok(()) => println!("Saved to disk"),
+                    Err(e) => eprintln!("Could not save to disk: {e}"),
                 },
             },
             Err(_) => eprintln!("Unknown command"),
