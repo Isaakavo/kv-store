@@ -2,9 +2,9 @@ mod commands;
 mod store;
 
 use commands::Command;
-use store::Store;
 use std::io::{self, Write};
 use std::str::FromStr;
+use store::Store;
 
 fn main() {
     let mut store = Store::new();
@@ -38,8 +38,12 @@ fn main() {
                     } else {
                         println!("(integer) 0");
                     }
-                },
+                }
                 Command::KEYS => store.keys(),
+                Command::SAVE => match store.save_to_disk() {
+                    Ok(value) => println!("Saved to disk {}", value),
+                    Err(_) => println!("Could not save to disk"),
+                },
             },
             Err(_) => eprintln!("Unknown command"),
         }

@@ -7,6 +7,7 @@ pub enum Command {
     DELETE(String),
     EXISTS(String),
     KEYS,
+    SAVE,
 }
 
 #[derive(Debug)]
@@ -37,6 +38,9 @@ impl FromStr for Command {
             },
             Some("keys") => {
                 Ok(Command::KEYS)
+            },
+            Some("save") => {
+                Ok(Command::SAVE)
             }
             _ => Err(ParseCommandError),
         }
