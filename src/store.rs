@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 use std::fs::{self, OpenOptions};
-use std::io::{self, BufWriter, Write};
+use std::io::{self, BufWriter, Read, Write};
 
 pub struct Store {
     file_name: String,
@@ -91,7 +91,7 @@ impl Store {
         let mut writer = BufWriter::new(file);
 
         for (key, value) in &self.data {
-            writeln!(writer, "{key}: {value}")?;
+            writeln!(writer, "{key}-{value}")?;
         }
 
         // Flush BufWriter's internal buffer to the OS before renaming.
@@ -102,5 +102,25 @@ impl Store {
         fs::rename(&tmp_path, &self.file_name)?;
 
         Ok(())
+    }
+
+    pub fn load_from_disk(&mut self) -> Result<String, StoreError> {
+        let mut file = OpenOptions::new().read(true).open(&self.file_name)?;
+
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+
+        let iterator = contents.split('\n');
+
+        for item in iterator {
+            let splitted: Vec<&str> = item.split('-').collect();
+            println!("{:?}", splitted);
+            let key = splitted[0];
+            let value = splitted[1];
+
+            self.set(key.to_string(), value.to_string());
+        }
+
+        Ok(contents)
     }
 }

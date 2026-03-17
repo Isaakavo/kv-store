@@ -44,6 +44,10 @@ fn main() {
                     Ok(()) => println!("Saved to disk"),
                     Err(e) => eprintln!("Could not save to disk: {e}"),
                 },
+                Command::LOAD => match store.load_from_disk() {
+                    Ok(values) => println!("{values}"),
+                    Err(e) => eprint!("Could not read from disk {e}"),
+                },
             },
             Err(_) => eprintln!("Unknown command"),
         }
