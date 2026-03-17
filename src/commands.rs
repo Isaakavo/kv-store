@@ -9,6 +9,7 @@ pub enum Command {
     KEYS,
     SAVE,
     LOAD,
+    CLEAR,
 }
 
 #[derive(Debug)]
@@ -28,24 +29,19 @@ impl FromStr for Command {
             Some("get") => {
                 let key = parts.next().ok_or(ParseCommandError)?;
                 Ok(Command::GET(key.to_string()))
-            },
+            }
             Some("delete") => {
                 let key = parts.next().ok_or(ParseCommandError)?;
                 Ok(Command::DELETE(key.to_string()))
-            },
+            }
             Some("exists") => {
                 let key = parts.next().ok_or(ParseCommandError)?;
                 Ok(Command::EXISTS(key.to_string()))
-            },
-            Some("keys") => {
-                Ok(Command::KEYS)
-            },
-            Some("save") => {
-                Ok(Command::SAVE)
-            },
-            Some("load") => {
-                Ok(Command::LOAD)
             }
+            Some("keys") => Ok(Command::KEYS),
+            Some("save") => Ok(Command::SAVE),
+            Some("load") => Ok(Command::LOAD),
+            Some("clear") => Ok(Command::CLEAR),
             _ => Err(ParseCommandError),
         }
     }

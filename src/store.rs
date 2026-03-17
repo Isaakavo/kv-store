@@ -118,4 +118,16 @@ impl Store {
 
         Ok(contents)
     }
+
+    pub fn clear(&mut self) -> Result<(), StoreError> {
+        if self.data.is_empty() {
+            return Err(StoreError::EmptyStore);
+        }
+
+        fs::remove_file(&self.file_name)?;
+
+        self.data.clear();
+
+        Ok(())
+    }
 }

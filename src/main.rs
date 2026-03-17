@@ -6,6 +6,8 @@ use std::io::{self, Write};
 use std::str::FromStr;
 use store::Store;
 
+use crate::store::StoreError;
+
 fn main() {
     let mut store = Store::new();
 
@@ -47,6 +49,11 @@ fn main() {
                 Command::LOAD => match store.load_from_disk() {
                     Ok(values) => println!("{values}"),
                     Err(e) => eprint!("Could not read from disk {e}"),
+                },
+                Command::CLEAR => match store.clear() {
+                    Ok(()) => println!("OK"),
+                    Err(StoreError::EmptyStore) => eprintln!("The store is empty, could not clear"),
+                    Err(StoreError::Io(io_erro)) => eprintln!("Could not open the file {io_erro}"),
                 },
             },
             Err(_) => eprintln!("Unknown command"),
