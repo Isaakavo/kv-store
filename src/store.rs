@@ -110,16 +110,11 @@ impl Store {
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
 
-        let iterator = contents.split('\n');
-
-        for item in iterator {
-            let splitted: Vec<&str> = item.split('-').collect();
-            println!("{:?}", splitted);
-            let key = splitted[0];
-            let value = splitted[1];
-
-            self.set(key.to_string(), value.to_string());
-        }
+        self.data = contents
+            .lines()
+            .filter_map(|line| line.split_once("-"))
+            .map(|(key, value)| (key.to_string(), value.to_string()))
+            .collect();
 
         Ok(contents)
     }
