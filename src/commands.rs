@@ -10,6 +10,7 @@ pub enum Command {
     SAVE,
     LOAD,
     CLEAR,
+    EXIT,
 }
 
 #[derive(Debug)]
@@ -42,6 +43,7 @@ impl FromStr for Command {
             Some("save") => Ok(Command::SAVE),
             Some("load") => Ok(Command::LOAD),
             Some("clear") => Ok(Command::CLEAR),
+            Some("exit") => Ok(Command::EXIT),
             _ => Err(ParseCommandError),
         }
     }

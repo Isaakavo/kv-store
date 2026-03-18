@@ -55,6 +55,10 @@ fn main() {
                     Err(StoreError::EmptyStore) => eprintln!("The store is empty, could not clear"),
                     Err(StoreError::Io(io_erro)) => eprintln!("Could not open the file {io_erro}"),
                 },
+                Command::EXIT => {
+                    println!("GoodBye!");
+                    return ();
+                }
             },
             Err(_) => eprintln!("Unknown command"),
         }
